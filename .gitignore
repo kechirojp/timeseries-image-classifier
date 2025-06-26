@@ -152,15 +152,10 @@ tuning/logs/
 feature_analysis/outputs/
 feature_analysis/models/
 
-# Dataset directories (汎用化後)
+# Dataset directories
 dataset_a_*/
 dataset_b_*/
 dataset_c_*/
-
-# Old financial-specific directories (削除済み参考)
-# nasdaq100_*/
-# GER30_*/
-# US30_*/
 
 # IDE
 .vscode/
@@ -203,4 +198,3 @@ lgbm_model.*
 *.md
 !README.md
 !README_ja.md
-!clean.md
