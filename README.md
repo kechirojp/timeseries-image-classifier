@@ -12,9 +12,9 @@ A production-ready deep learning project for time-series image classification us
 
 ## Features
 
-- **Advanced Transfer Learning**: Pre-trained EfficientNet-B4 or NFNet-F0 (fallback to ResNet18) with stage-wise differential learning rates
+- **Advanced Transfer Learning**: Pre-trained EfficientNet-B4 or NFNet-F0 (fallback to ResNet18) with configurable fine-tuning approaches
 - **Multi-Modal Support**: Single-modal (image-only) and multi-modal (image + numerical time-series features)
-- **Progressive Fine-tuning**: Efficient stage-wise unfreezing with differential learning rates
+- **Flexible Fine-tuning**: Choose between stage-wise differential learning rates or progressive unfreezing
 - **F1-Score Optimization**: Comprehensive F1-score based evaluation and early stopping
 - **Production-Ready**: Resume training from checkpoints, flexible YAML configuration system
 - **Advanced Visualization**: TensorBoard integration with comprehensive metrics tracking

@@ -12,9 +12,9 @@ PyTorch Lightningを使用したEfficientNet/NFNetによる時系列画像分類
 
 ## 機能概要
 
-- **高度な転移学習**: 事前学習済みEfficientNet-B4またはNFNet-F0（フォールバック：ResNet18）によるステージ毎差分学習率転移学習
+- **高度な転移学習**: 事前学習済みEfficientNet-B4またはNFNet-F0（フォールバック：ResNet18）による設定可能なファインチューニングアプローチ
 - **マルチモーダルサポート**: シングルモーダル（画像のみ）およびマルチモーダル（画像＋数値時系列特徴量）対応
-- **段階的ファインチューニング**: 差分学習率による効率的な段階的凍結解除
+- **柔軟なファインチューニング**: ステージ毎差分学習率または段階的凍結解除の選択が可能
 - **F1スコア最適化**: 包括的なF1スコアベース評価と早期停止
 - **プロダクション対応**: チェックポイントからの学習再開、柔軟なYAML設定システム
 - **高度な可視化**: 包括的なメトリクス追跡によるTensorBoard統合
@@ -110,6 +110,77 @@ feature_analysis/colab_runner_current.ipynb
 - チェックポイントからの学習再開
 - TensorBoardによる可視化
 - モデル評価と予測の可視化
+
+## データセット構造
+
+### 必要なフォルダ構成
+
+```
+project_root/
+├── data/
+│   ├── dataset_a_15m_winsize40/
+│   │   ├── train/
+│   │   │   ├── Class_A/
+│   │   │   │   ├── dataset_a_15m_20240101_0900_label_0.png
+│   │   │   │   └── ...
+│   │   │   ├── Class_B/
+│   │   │   └── Class_C/
+│   │   ├── val/
+│   │   └── test/
+│   ├── dataset_b_15m_winsize40/
+│   ├── dataset_c_15m_winsize40/
+│   └── fix_labeled_data_dataset_a_15m.csv  # マルチモーダル用ラベル
+```
+
+### ファイル命名規則
+
+#### 画像ファイル
+```
+{dataset_name}_{timeframe}_{YYYYMMDD}_{HHMM}_label_{class_id}.png
+```
+
+例：
+- `dataset_a_15m_20240101_0900_label_0.png` → Class_A（ラベル0）
+- `dataset_a_15m_20240101_0915_label_1.png` → Class_B（ラベル1）
+
+#### 時系列データ（マルチモーダル用）
+```
+{dataset_name}_{timeframe}_{YYYYMMDD}{HHMM}.csv
+```
+
+例：
+- `dataset_a_15m_202412301431.csv` → 2024-12-30 14:31のデータ
+
+### 設定例
+
+#### ローカル環境（`configs/config.yaml`）
+```yaml
+# データディレクトリ設定
+data_dir: "./data"
+
+# データセットディレクトリ
+dataset_a_dir: "./data/dataset_a_15m_winsize40"
+dataset_b_dir: "./data/dataset_b_15m_winsize40"
+dataset_c_dir: "./data/dataset_c_15m_winsize40"
+
+# 使用するデータセット
+datasets: ["dataset_a", "dataset_b", "dataset_c"]
+```
+
+#### マルチモーダル設定
+```yaml
+model_mode: "multi"
+
+# 時系列データ設定
+timeseries:
+  data_path: "./data/fix_labeled_data_dataset_a_15m.csv"
+  feature_columns: ["feature_1", "feature_2", "feature_3", "feature_4", "feature_5", "feature_6"]
+  window_size: 40
+
+# クラス設定
+num_classes: 3
+class_names: ["Class_A", "Class_B", "Class_C"]
+```
 
 ## 高度な機能
 
@@ -244,73 +315,4 @@ tensorboard --logdir="./logs/single/nfnet"
 }
 ```
 
-## データセット構造
 
-### 必要なフォルダ構成
-
-```
-project_root/
-├── data/
-│   ├── dataset_a_15m_winsize40/
-│   │   ├── train/
-│   │   │   ├── Class_A/
-│   │   │   │   ├── dataset_a_15m_20240101_0900_label_0.png
-│   │   │   │   └── ...
-│   │   │   ├── Class_B/
-│   │   │   └── Class_C/
-│   │   ├── val/
-│   │   └── test/
-│   ├── dataset_b_15m_winsize40/
-│   ├── dataset_c_15m_winsize40/
-│   └── fix_labeled_data_dataset_a_15m.csv  # マルチモーダル用ラベル
-```
-
-### ファイル命名規則
-
-#### 画像ファイル
-```
-{dataset_name}_{timeframe}_{YYYYMMDD}_{HHMM}_label_{class_id}.png
-```
-
-例：
-- `dataset_a_15m_20240101_0900_label_0.png` → Class_A（ラベル0）
-- `dataset_a_15m_20240101_0915_label_1.png` → Class_B（ラベル1）
-
-#### 時系列データ（マルチモーダル用）
-```
-{dataset_name}_{timeframe}_{YYYYMMDD}{HHMM}.csv
-```
-
-例：
-- `dataset_a_15m_202412301431.csv` → 2024-12-30 14:31のデータ
-
-### 設定例
-
-#### ローカル環境（`configs/config.yaml`）
-```yaml
-# データディレクトリ設定
-data_dir: "./data"
-
-# データセットディレクトリ
-dataset_a_dir: "./data/dataset_a_15m_winsize40"
-dataset_b_dir: "./data/dataset_b_15m_winsize40"
-dataset_c_dir: "./data/dataset_c_15m_winsize40"
-
-# 使用するデータセット
-datasets: ["dataset_a", "dataset_b", "dataset_c"]
-```
-
-#### マルチモーダル設定
-```yaml
-model_mode: "multi"
-
-# 時系列データ設定
-timeseries:
-  data_path: "./data/fix_labeled_data_dataset_a_15m.csv"
-  feature_columns: ["feature_1", "feature_2", "feature_3", "feature_4", "feature_5", "feature_6"]
-  window_size: 40
-
-# クラス設定
-num_classes: 3
-class_names: ["Class_A", "Class_B", "Class_C"]
-```
