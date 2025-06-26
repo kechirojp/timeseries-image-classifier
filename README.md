@@ -1,4 +1,6 @@
-# Time-Series Image Classifier
+# Time-Series Imag- **Production Ready**: Resume training from checkpoints, flexible YAML configuration system
+- **Learning Process Visualization**: TensorBoard for training metrics display
+- **Feature Engineering**: LightGBM-based feature importance analysis with automatic config updateslassifier
 
 ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat&logo=PyTorch&logoColor=white)
@@ -6,15 +8,15 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-A production-ready deep learning project for time-series image classification using EfficientNet/NFNet with PyTorch Lightning. This project implements transfer learning for multi-class classification tasks with advanced fine-tuning techniques, supporting both single-modal (image-only) and multi-modal (image + time-series features) learning approaches.
+A production-ready deep learning project for time-series image classification using EfficientNet/NFNet with PyTorch Lightning. This project implements transfer learning for multi-class classification tasks with selective fine-tuning techniques, supporting both single-modal (image-only) and multi-modal (image + time-series features) learning approaches.
 
 [日本語版README](README_ja.md) | [English README](README.md)
 
 ## Features
 
-- **Advanced Transfer Learning**: Pre-trained EfficientNet-B4 or NFNet-F0 (fallback to ResNet18) with configurable fine-tuning approaches
+- **Model-Selectable Transfer Learning**: Pre-trained EfficientNet-B4 or NFNet-F0 (fallback to ResNet18) with configurable fine-tuning approaches
 - **Multi-Modal Support**: Single-modal (image-only) and multi-modal (image + numerical time-series features)
-- **Flexible Fine-tuning**: Choose between stage-wise differential learning rates or progressive unfreezing
+- **Selective Fine-tuning**: Choose between stage-wise differential learning rates or progressive unfreezing
 - **F1-Score Optimization**: Comprehensive F1-score based evaluation and early stopping
 - **Production-Ready**: Resume training from checkpoints, flexible YAML configuration system
 - **Advanced Visualization**: TensorBoard integration with comprehensive metrics tracking
@@ -30,6 +32,13 @@ This project prioritizes F1-score for model evaluation and optimization:
 - **Precision-Recall Balance**: Harmonically balances precision and recall, minimizing both false positives and false negatives
 - **Performance-Based Checkpointing**: Saves models based on validation F1-score improvements, ensuring actual predictive performance gains
 - **Hyperparameter Optimization**: Optuna optimization targets F1-score maximization for optimal model selection
+
+### Class Imbalance Handling Strategy
+
+To address class imbalance in datasets, the following strategy is employed:
+
+- **Uniform Sampling**: All classes are balanced to match the sample count of the smallest class
+- **Cross-Split Consistency**: Maintains unified class distribution across training, validation, and test sets
 
 Key F1-score applications:
 1. **Model Checkpointing**: `epoch={epoch:05d}-val_loss={val_loss:.4f}-val_f1={val_f1:.4f}.ckpt`
