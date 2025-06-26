@@ -1,6 +1,12 @@
 # ベースイメージとして CUDA 12.1 と開発ツールを含む Ubuntu 22.04 を使用
 FROM nvidia/cuda:12.1.1-devel-ubuntu22.04
 
+# メタデータの追加
+LABEL maintainer="kechiro <kechirojp@example.com>"
+LABEL description="Production-ready time-series image classifier using EfficientNet/NFNet with PyTorch Lightning"
+LABEL version="1.0.0"
+LABEL org.opencontainers.image.source="https://github.com/kechirojp/timeseries-image-classifier"
+
 # 環境変数を設定 (非対話モードでインストール)
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Tokyo
@@ -48,5 +54,5 @@ RUN pip install --no-cache-dir optuna-integration[pytorch_lightning]
 # アプリケーションコードをコンテナにコピー (requirements.txt は既にコピー済みなので除外)
 COPY . .
 
-# コンテナ起動時に実行されるデフォルトコマンド (必要に応じて変更)
-# CMD ["python3", "your_script.py"]
+# コンテナ起動時に実行されるデフォルトコマンド
+CMD ["python3", "main.py"]

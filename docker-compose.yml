@@ -45,11 +45,10 @@ services:
       # データディレクトリをマウント（イメージには含めず、実行時にマウント）
       - ./data:/app/data
       
-      # 教師画像データディレクトリ（必要に応じてコメントアウトを外す）
-      # - ./nasdaq100_15m:/app/nasdaq100_15m  # 説明: NASDAQ100 15分足の教師画像
-      # - ./nasdaq100_15m_winsize40:/app/nasdaq100_15m_winsize40  # 説明: NASDAQ100 15分足のウィンドウサイズ40の教師画像
-      # - ./GER30_15m_winsize40:/app/GER30_15m_winsize40  # 説明: GER30 15分足のウィンドウサイズ40の教師画像
-      # - ./US30_15m_winsize40:/app/US30_15m_winsize40  # 説明: US30 15分足のウィンドウサイズ40の教師画像
+      # 時系列画像データセットディレクトリ（必要に応じてコメントアウトを外す）
+      # - ./dataset_a_15m_winsize40:/app/dataset_a_15m_winsize40  # Dataset A
+      # - ./dataset_b_15m_winsize40:/app/dataset_b_15m_winsize40  # Dataset B
+      # - ./dataset_c_15m_winsize40:/app/dataset_c_15m_winsize40  # Dataset C
       
       # モデルチェックポイント（訓練結果の保存・読み込み用）
       - ./checkpoints:/app/checkpoints

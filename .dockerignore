@@ -44,19 +44,7 @@ logs/
 .DS_Store
 Thumbs.db
 
-# 既に削除済みの不要ファイル（参考）
-# feature_analysis/Figure_*.png (削除済み)
-# feature_analysis/lightGBMを使った特徴量重要度の算出_最新.ipynb (削除済み)
-# feature_analysis/old_colab_runner.ipynb (削除済み)
-# tuning/optuna_log_*.txt (削除済み)
-# tuning/best_trial.txt (削除済み)
-# src/# Code Citations.md (削除済み)
-# 旧ファイル類 (削除済み)
-
-# 不要ディレクトリ（削除済み）
-# feature_analysis/old/ (削除済み)
-# tuning/old_studies/ (削除済み)
-# configs/multimodal/ (削除済み)
+# 学習関連ディレクトリ
 lightning_logs/
 logs/
 

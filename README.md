@@ -3,6 +3,7 @@
 ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat&logo=PyTorch&logoColor=white)
 ![PyTorch Lightning](https://img.shields.io/badge/PyTorch%20Lightning-792EE5?style=flat&logo=PyTorch%20Lightning&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 A production-ready deep learning project for time-series image classification using EfficientNet/NFNet with PyTorch Lightning. This project implements transfer learning for multi-class classification tasks with advanced fine-tuning techniques, supporting both single-modal (image-only) and multi-modal (image + time-series features) learning approaches.
@@ -53,18 +54,30 @@ Key F1-score applications:
 ### Setup
 
 1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Configure settings:
+2. **Option A: Local Setup**
+   - Install dependencies: `pip install -r requirements.txt`
+3. **Option B: Docker Setup**
+   - Pull from Docker Hub: `docker pull kechirojp/timeseries-image-classifier:latest`
+   - Or build locally: `./build-docker.sh`
+4. Configure settings:
    - Local environment: `configs/config.yaml`
    - Google Colab: `configs/config_for_google_colab.yaml`
    - Set `model_mode` ('single' or 'multi') and `model_architecture_name`
 
 ### Training
 
-Start training with:
-
+**Local execution:**
 ```bash
 python main.py
+```
+
+**Docker execution:**
+```bash
+# Run with Docker Compose (recommended)
+docker-compose up
+
+# Or run directly
+docker run --gpus all -it kechirojp/timeseries-image-classifier:latest
 ```
 
 ### Resume Training
