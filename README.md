@@ -1,6 +1,4 @@
-# Time-Series Imag- **Production Ready**: Resume training from checkpoints, flexible YAML configuration system
-- **Learning Process Visualization**: TensorBoard for training metrics display
-- **Feature Engineering**: LightGBM-based feature importance analysis with automatic config updateslassifier
+# Time-Series Image Classifier
 
 ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat&logo=PyTorch&logoColor=white)
