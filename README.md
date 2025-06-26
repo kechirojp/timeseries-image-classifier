@@ -97,7 +97,7 @@ To resume training, specify the checkpoint filename in your config file:
 
 ```yaml
 # In config.yaml
-resume_from_checkpoint: last.ckpt  # or 'epoch=00051-val_loss=0.7755-val_f1=0.6688.ckpt'
+resume_from_checkpoint: last.ckpt  # or 'epoch=00051-val_loss=0.7755-val_f1=0.6688.ckpt' (example)
 ```
 
 Then run:

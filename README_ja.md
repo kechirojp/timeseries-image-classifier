@@ -95,7 +95,7 @@ docker run --gpus all -it kechiro/timeseries-image-classifier:latest
 
 ```yaml
 # config.yaml 内
-resume_from_checkpoint: last.ckpt  # または 'epoch=00051-val_loss=0.7755-val_f1=0.6688.ckpt'
+resume_from_checkpoint: last.ckpt  # または 'epoch=00051-val_loss=0.7755-val_f1=0.6688.ckpt' （例）
 ```
 
 その後実行：
