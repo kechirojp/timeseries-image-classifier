@@ -7,8 +7,8 @@
 DEFAULT_TAG="latest"
 TAG=${1:-$DEFAULT_TAG}
 
-# Docker Hub ユーザー名（変更してください）
-DOCKER_HUB_USER="kechirojp"
+# Docker Hub ユーザー名（あなたのユーザー名に変更してください）
+DOCKER_HUB_USER="kechiro"
 IMAGE_NAME="timeseries-image-classifier"
 
 echo "Building Docker image: ${DOCKER_HUB_USER}/${IMAGE_NAME}:${TAG}"

@@ -57,7 +57,7 @@ Key F1-score applications:
 2. **Option A: Local Setup**
    - Install dependencies: `pip install -r requirements.txt`
 3. **Option B: Docker Setup**
-   - Pull from Docker Hub: `docker pull kechirojp/timeseries-image-classifier:latest`
+   - Pull from Docker Hub: `docker pull kechiro/timeseries-image-classifier:latest`
    - Or build locally: `./build-docker.sh`
 4. Configure settings:
    - Local environment: `configs/config.yaml`
@@ -77,7 +77,7 @@ python main.py
 docker-compose up
 
 # Or run directly
-docker run --gpus all -it kechirojp/timeseries-image-classifier:latest
+docker run --gpus all -it kechiro/timeseries-image-classifier:latest
 ```
 
 ### Resume Training
