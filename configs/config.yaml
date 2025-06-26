@@ -1,5 +1,5 @@
 # モデルモード ('single' または 'multi')
-model_mode: single           # モデルの動作モード
+model_mode: multi           # モデルの動作モード
 # モデルアーキテクチャ名 (ログ/チェックポイントのディレクトリ名に使用)
 model_architecture_name: efficientnet_b4  # 使用するモデルアーキテクチャ
 
@@ -94,9 +94,25 @@ resume_from_checkpoint: "./checkpoints/singlemodal/efficientnet_b4_trial24_val_f
 
 # --- 時系列データ設定 ---
 timeseries:
+  # 時系列特徴量データファイルのパス (マルチモーダル用)
+  data_path: "./data/timeseries_15m_202412301431.csv"
   # 使用する特徴量のカラム名リスト
   feature_columns: ['feature_1', 'feature_2', 'feature_3', 'feature_4', 'feature_5', 'feature_6']
   # 時系列特徴量の次元数 (feature_columnsの数と一致させる)
   feature_dim: 6
   # ウィンドウサイズ (シーケンス長)
   window_size: 40
+
+# --- マルチモーダル設定 (model_mode: multi の場合のみ有効) ---
+# Transformer設定
+transformer:
+  dim: 128            # Transformer内部の次元数
+  layers: 2           # Transformerエンコーダ層の数
+  heads: 4            # Multi-Head Attentionのヘッド数
+  dropout: 0.1        # Transformer内のDropout率
+  ff_dim: 512         # FeedForward層の次元数 (dim * 4 が一般的)
+
+# 最終分類器設定
+classifier:
+  dropout1: 0.3       # 最初のDropout率
+  dropout2: 0.2       # 2番目のDropout率

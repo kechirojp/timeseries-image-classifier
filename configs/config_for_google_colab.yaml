@@ -1,77 +1,118 @@
-dataset_a_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_a_15m_winsize40
-dataset_b_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_b_15m_winsize40
-dataset_c_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_c_15m_winsize40
-accumulate_grad_batches: 2
-agc_clip_factor: 0.05449588573832388
-agc_eps: 1e-3
-auto_unfreeze:
-  stage1_epoch: 20
-  stage2_epoch: 30
-  stage3_epoch: 40
-aux_loss_weight: 0.2587019580535172
-base_dir: /content/drive/MyDrive/Time_Series_Classifier
-batch_size: 40
-check_data: false
-checkpoint_dir: /content/drive/MyDrive/Time_Series_Classifier/checkpoints
-class_names:
-- Class_A
-- Class_B
-- Class_C
-data_dir: /content/drive/MyDrive/Time_Series_Classifier/data
-dataset_mean:
-- 0.485
-- 0.456
-- 0.406
-dataset_std:
-- 0.229
-- 0.224
-- 0.225
-debug: false
-early_stopping_patience: 10
-fold: 0
-force_cpu: false
-force_gpu: false
-gpu_debug: false
-image_size: 380
-log_every_n_steps: 50
-logs_dir: /content/drive/MyDrive/Time_Series_Classifier/logs
-lr_backbone: 0.0003651232342099075
-lr_decay_rate: 0.397981145024631
-lr_head: 0.0022754797344858332
-max_epochs: 100
-model:
-  classifier_dropout1: 0.3
-  classifier_dropout2: 0.2
-  drop_path_rate: 0.20889964802961225
-  type: efficientnet_b4
-model_architecture_name: efficientnet_b4
-model_mode: single
-nasdaq100_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_a_15m_winsize40
-num_folds: 5
-num_workers: 4
-persistent_workers: true
-pin_memory: true
-precision: 16-mixed
-prefetch_factor: 2
-reasoning_dim: 3
-resume_from_checkpoint: /content/drive/MyDrive/Time_Series_Classifier/checkpoints/singlemodal/efficientnet_b4_trial24_val_f1-val_f1=0.7180_val_loss-val_loss=0.5636_lrh2.3e-03_lrb3.7e-04.ckpt
-scheduler: cosine
-seed: 42
-datasets:
-- dataset_a
-- dataset_b
-- dataset_c
-timeseries:
-  feature_columns:
-  - feature_1
-  - feature_2
-  - feature_3
-  - feature_4
-  - feature_5
-  - feature_6
-  feature_dim: 6
-  window_size: 40
-use_agc: false
-use_gradient_checkpointing: true
+# モデルモード ('single' または 'multi')
+model_mode: multi           # モデルの動作モード
+# モデルアーキテクチャ名 (ログ/チェックポイントのディレクトリ名に使用)
+model_architecture_name: efficientnet_b4  # 使用するモデルアーキテクチャ
+
+# --- 転移学習戦略設定 ---
+# 段階的凍結解除の使用有無 (true: 段階的凍結解除, false: ステージ毎差分学習率)
 use_progressive_unfreezing: false
-weight_decay: 0.06361308055294002
+# 段階的ファインチューニング設定 (use_progressive_unfreezing: true の場合のみ有効)
+auto_unfreeze:
+  stage1_epoch: 20    # ステージ1の凍結解除エポック
+  stage2_epoch: 30    # ステージ2の凍結解除エポック
+  stage3_epoch: 40    # ステージ3の凍結解除エポック
+
+# --- 学習率設定 ---
+# 最適化されたパラメータ
+lr_head: 0.0022754797344858332    # ヘッド部分の学習率
+lr_backbone: 0.0003651232342099075 # バックボーン基本学習率
+lr_decay_rate: 0.397981145024631   # 層ごとの学習率減衰率
+scheduler: cosine      # コサインスケジューリングを使用
+
+# --- NFNetの勾配クリッピング設定 ---
+# 最適化されたパラメータ
+use_agc: false         # AGC (Adaptive Gradient Clipping) の使用有無
+agc_clip_factor: 0.05449588573832388  # AGCのクリップ係数
+agc_eps: 1e-3          # AGCの安定化係数
+
+# --- その他の学習設定 ---
+batch_size: 40         # バッチサイズ (最適化されたパラメータ)
+max_epochs: 100         # 総エポック数
+
+# --- 損失関数の重み ---
+aux_loss_weight: 0.2587019580535172  # 補助損失の重み (最適化されたパラメータ)
+
+# --- オプティマイザ設定 ---
+weight_decay: 0.06361308055294002  # 重み減衰係数 (最適化されたパラメータ)
+
+# --- トレーナー設定 ---
+precision: '16-mixed'         # 混合精度計算 (メモリ使用量削減と計算速度向上のため)
+accumulate_grad_batches: 2    # 勾配累積ステップ数
+early_stopping_patience: 10   # 改善が見られなかった時の早期停止エポック数
+log_every_n_steps: 50         # ログ記録頻度（ステップ単位）
+
+# --- ハードウェア設定 ---
+force_gpu: false              # GPUを強制使用するか否か (自動検出に任せる)
+force_cpu: false              # CPUを強制使用するか否か
+num_workers: 4                # データローダーのワーカ数 (Google Colabでは問題なし)
+persistent_workers: true     # ワーカープロセスの永続化有無　
+pin_memory: true              # データローダーのpin_memory使用有無　
+prefetch_factor: 2            # プリフェッチ係数
+reasoning_dim: 3              # 推論時の出力次元数
+
+# --- データセット設定 ---
+num_folds: 5                # データセットの分割数
+fold: 0                     # 使用するフォールド番号（0から num_folds-1）
+seed: 42                    # 乱数シード
+image_size: 380             # 画像リサイズサイズ (EfficientNet_B4推奨サイズ)
+# データセット情報 (可視化用)
+class_names: ['Class_A', 'Class_B', 'Class_C']    # クラス名リスト
+dataset_mean: [0.485, 0.456, 0.406]       # ImageNet平均値 (チャンネル毎)
+dataset_std: [0.229, 0.224, 0.225]         # ImageNet標準偏差 (チャンネル毎)
+
+# --- モデル詳細設定 ---
+model:
+  type: "efficientnet_b4"   # 使用するモデルタイプ
+  drop_path_rate: 0.20889964802961225  # ドロップパス率 (最適化されたパラメータ)
+  classifier_dropout1: 0.3  # 分類器の最初のドロップアウト率
+  classifier_dropout2: 0.2  # 分類器の2番目のドロップアウト率
+
+# --- データディレクトリ設定 (Google Colab) ---
+# プロジェクトルートディレクトリ
+base_dir: "/content/drive/MyDrive/Time_Series_Classifier"
+# 入力データディレクトリ
+data_dir: "/content/drive/MyDrive/Time_Series_Classifier/data"
+# ログ保存ディレクトリ
+logs_dir: "/content/drive/MyDrive/Time_Series_Classifier/logs"
+# チェックポイント保存先ディレクトリ
+checkpoint_dir: "/content/drive/MyDrive/Time_Series_Classifier/checkpoints"
+
+# --- 複数データセットの設定 ---
+# 利用可能なデータセットリスト
+datasets: ["dataset_a", "dataset_b", "dataset_c"]
+# 各データセットのディレクトリ設定
+dataset_a_dir: "/content/drive/MyDrive/Time_Series_Classifier/data/dataset_a_15m_winsize40"
+dataset_b_dir: "/content/drive/MyDrive/Time_Series_Classifier/data/dataset_b_15m_winsize40"
+dataset_c_dir: "/content/drive/MyDrive/Time_Series_Classifier/data/dataset_c_15m_winsize40"
+
+# --- デバッグ・再開設定 ---
+check_data: false             # データチェックの有無
+debug: false                  # デバッグモードの有無
+gpu_debug: false              # GPUデバッグモードの有無
+# resume_from_checkpoint: false # チェックポイントからの再開有無
+resume_from_checkpoint: "/content/drive/MyDrive/Time_Series_Classifier/checkpoints/singlemodal/efficientnet_b4_trial24_val_f1-val_f1=0.7180_val_loss-val_loss=0.5636_lrh2.3e-03_lrb3.7e-04.ckpt"  # チェックポイントファイルのパス（ここを変更）
+
+# --- 時系列データ設定 ---
+timeseries:
+  # 時系列特徴量データファイルのパス (マルチモーダル用)
+  data_path: "/content/drive/MyDrive/Time_Series_Classifier/data/timeseries_15m_202412301431.csv"
+  # 使用する特徴量のカラム名リスト
+  feature_columns: ['feature_1', 'feature_2', 'feature_3', 'feature_4', 'feature_5', 'feature_6']
+  # 時系列特徴量の次元数 (feature_columnsの数と一致させる)
+  feature_dim: 6
+  # ウィンドウサイズ (シーケンス長)
+  window_size: 40
+
+# --- マルチモーダル設定 (model_mode: multi の場合のみ有効) ---
+# Transformer設定
+transformer:
+  dim: 128            # Transformer内部の次元数
+  layers: 2           # Transformerエンコーダ層の数
+  heads: 4            # Multi-Head Attentionのヘッド数
+  dropout: 0.1        # Transformer内のDropout率
+  ff_dim: 512         # FeedForward層の次元数 (dim * 4 が一般的)
+
+# 最終分類器設定
+classifier:
+  dropout1: 0.3       # 最初のDropout率
+  dropout2: 0.2       # 2番目のDropout率

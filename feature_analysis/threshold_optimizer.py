@@ -22,37 +22,21 @@ OPTIMIZATION_METRIC = 'fbeta' # 'f1' または 'fbeta' を選択
 BETA_VALUE = 2.0             # 'fbeta' を選択した場合の beta 値 (OPTIMIZATION_METRIC='f1' の場合は無視される)
 # ---------------------------------
 
-# --- Google Colab/ローカルパス判定 ---
-def is_running_in_colab() -> bool:
-    """
-    現在の実行環境がGoogle Colaboratoryであるかを判定します。
-
-    Returns:
-        bool: Google Colab環境であればTrue、そうでなければFalse。
-    """
-    try:
-        # google.colab モジュールのインポートを試みる
-        import google.colab
-        return True
-    except ImportError:
-        # インポート失敗時はColab環境ではない
-        return False
-
+# --- プロジェクトルートパス取得 ---
 def get_project_root() -> str:
     """
-    実行環境に応じてプロジェクトのルートディレクトリパスを取得します。
+    プロジェクトのルートディレクトリパスを動的に取得します。
 
     Returns:
         str: プロジェクトルートの絶対パス。
-             (Colab: '/content/drive/MyDrive/NFNet_Classifier_pretrained',
-              Local: 'J:/マイドライブ/NFNet_Classifier_pretrained')
     """
-    if is_running_in_colab():
-        # Google Colab 環境のパス
-        return '/content/drive/MyDrive/NFNet_Classifier_pretrained'
-    else:
-        # ローカル環境 (Windows) のパス
-        return 'J:/マイドライブ/NFNet_Classifier_pretrained'
+    # このスクリプトの絶対パスを取得
+    script_path = os.path.abspath(__file__)
+    # このスクリプトが配置されているディレクトリ (例: /path/to/project/feature_analysis)
+    script_dir = os.path.dirname(script_path)
+    # 親ディレクトリ（プロジェクトルート）
+    project_root = os.path.dirname(script_dir)
+    return project_root
 
 # --- 図の保存関数 ---
 def save_figure(fig: plt.Figure, name: str, output_base_dir: str):

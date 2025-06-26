@@ -247,29 +247,30 @@ class TimeSeriesDataModule(pl.LightningDataModule):
         logger.info(f"データディレクトリ (ルート): {self.data_dir}")
 
 
-        # --- 銘柄データディレクトリの設定 ---
-        self.symbols = config.get("symbols", ["nasdaq100"])
-        self.symbol_dirs = {}
-        for symbol in self.symbols:
-            symbol_key = f"{symbol}_dir"
-            if symbol_key in config:
+        # --- データセットディレクトリの設定 ---
+        # datasetsキーからデータセット名リストを取得
+        self.datasets = config.get("datasets", ["dataset_a"])
+        self.dataset_dirs = {}
+        for dataset in self.datasets:
+            dataset_key = f"{dataset}_dir"
+            if dataset_key in config:
                 # configにパスがあればそれを使用
-                symbol_path = config[symbol_key]
+                dataset_path = config[dataset_key]
                 # 相対パスの場合は base_dir を結合
-                if not os.path.isabs(symbol_path):
-                    symbol_path = os.path.join(self.base_dir, symbol_path)
+                if not os.path.isabs(dataset_path):
+                    dataset_path = os.path.join(self.base_dir, dataset_path)
             else:
                 # configになければデフォルトパスを生成 (base_dir基準)
                 # 例: ./data/dataset_a_15m_winsize40
-                symbol_path = os.path.join(self.base_dir, f"{symbol}_15m_winsize40")
+                dataset_path = os.path.join(self.data_dir, f"{dataset}_15m_winsize40")
 
-            if os.path.isdir(symbol_path):
-                self.symbol_dirs[symbol] = symbol_path
-                logger.info(f"銘柄 '{symbol}' の画像ディレクトリ: {symbol_path}")
+            if os.path.isdir(dataset_path):
+                self.dataset_dirs[dataset] = dataset_path
+                logger.info(f"データセット '{dataset}' の画像ディレクトリ: {dataset_path}")
             else:
-                logger.warning(f"銘柄 '{symbol}' のディレクトリが見つかりません: {symbol_path}")
-        if not self.symbol_dirs:
-             raise FileNotFoundError("設定された銘柄の画像ディレクトリが一つも見つかりませんでした。")
+                logger.warning(f"データセット '{dataset}' のディレクトリが見つかりません: {dataset_path}")
+        if not self.dataset_dirs:
+             raise FileNotFoundError("設定されたデータセットの画像ディレクトリが一つも見つかりませんでした。")
 
 
         # --- データ変換 ---
@@ -337,59 +338,59 @@ class TimeSeriesDataModule(pl.LightningDataModule):
         logger.info(f"データセットのセットアップを開始 (stage: {stage})")
 
         # --- 全画像データセットの読み込み ---
-        all_symbol_datasets = []
-        for symbol, symbol_dir in self.symbol_dirs.items():
-            symbol_datasets_parts = [] # train と test を一時的に格納するリスト
+        all_dataset_datasets = []
+        for dataset, dataset_dir in self.dataset_dirs.items():
+            dataset_datasets_parts = [] # train と test を一時的に格納するリスト
             for split in ["train", "test"]: # train と test の両方を読み込む
-                split_dir = os.path.join(symbol_dir, split)
+                split_dir = os.path.join(dataset_dir, split)
                 if os.path.isdir(split_dir):
                     try:
                         # ImageFolderに初期transformとしてNoneを設定
                         dataset_part = ImageFolder(root=split_dir, transform=None)
-                        logger.info(f"銘柄 '{symbol}' の '{split}' データを読み込みました: {len(dataset_part)} 件")
+                        logger.info(f"データセット '{dataset}' の '{split}' データを読み込みました: {len(dataset_part)} 件")
                         # --- デバッグ用: 各ImageFolderのラベル分布を確認 ---
                         try:
                             unique_labels, counts = np.unique(dataset_part.targets, return_counts=True)
                             label_counts = dict(zip(unique_labels, counts))
                             logger.info(f"  '{split}' データのラベル分布: {label_counts}")
                             if 2 not in label_counts or label_counts[2] == 0:
-                                logger.warning(f"    警告: 銘柄 '{symbol}' の '{split}' データにラベル2が含まれていません！ ディレクトリ '{split_dir}' を確認してください。")
+                                logger.warning(f"    警告: データセット '{dataset}' の '{split}' データにラベル2が含まれていません！ ディレクトリ '{split_dir}' を確認してください。")
                         except Exception as e_inner:
                             logger.error(f"    '{split}' データのラベル分布確認中にエラー: {e_inner}")
                         # --- デバッグ用ログここまで ---
-                        symbol_datasets_parts.append(dataset_part)
+                        dataset_datasets_parts.append(dataset_part)
                     except FileNotFoundError:
                         logger.warning(f"ディレクトリが見つかりません: {split_dir}")
                     except Exception as e:
-                         logger.error(f"銘柄 '{symbol}' の '{split}' データ読み込み中にエラー: {e}")
+                         logger.error(f"データセット '{dataset}' の '{split}' データ読み込み中にエラー: {e}")
                          # エラーが発生しても処理を続ける場合があるかもしれないが、基本的には問題
                          # raise e # 必要に応じてエラーを再発生させる
                 else:
-                    logger.warning(f"銘柄 '{symbol}' に '{split}' ディレクトリが見つかりません: {split_dir}")
+                    logger.warning(f"データセット '{dataset}' に '{split}' ディレクトリが見つかりません: {split_dir}")
 
-            if symbol_datasets_parts:
+            if dataset_datasets_parts:
                 # train と test データセットを結合
-                combined_symbol_dataset = ConcatDataset(symbol_datasets_parts)
-                logger.info(f"銘柄 '{symbol}' の train/test データを結合しました: 合計 {len(combined_symbol_dataset)} 件")
-                all_symbol_datasets.append(combined_symbol_dataset)
+                combined_dataset_dataset = ConcatDataset(dataset_datasets_parts)
+                logger.info(f"データセット '{dataset}' の train/test データを結合しました: 合計 {len(combined_dataset_dataset)} 件")
+                all_dataset_datasets.append(combined_dataset_dataset)
             else:
-                logger.warning(f"銘柄 '{symbol}' で読み込めるデータ (train/test) がありませんでした。")
+                logger.warning(f"データセット '{dataset}' で読み込めるデータ (train/test) がありませんでした。")
 
 
-        if not all_symbol_datasets:
+        if not all_dataset_datasets:
             raise ValueError("読み込める画像データセットがありません。")
 
-        # 複数の銘柄データセットを結合
+        # 複数のデータセットを結合
         # (各要素はすでに train/test が結合された ConcatDataset)
-        self.full_image_dataset = ConcatDataset(all_symbol_datasets)
-        logger.info(f"全銘柄の画像データ合計: {len(self.full_image_dataset)} 件")
+        self.full_image_dataset = ConcatDataset(all_dataset_datasets)
+        logger.info(f"全データセットの画像データ合計: {len(self.full_image_dataset)} 件")
 
         # --- デバッグ用: 最終的な full_image_dataset のラベル分布を確認 ---
         full_image_labels = []
         try:
             # full_image_dataset は ConcatDataset の ConcatDataset になっている
-            for symbol_concat_ds in self.full_image_dataset.datasets: # 各銘柄のConcatDataset
-                for imagefolder_ds in symbol_concat_ds.datasets: # 各ImageFolder (train or test)
+            for dataset_concat_ds in self.full_image_dataset.datasets: # 各データセットのConcatDataset
+                for imagefolder_ds in dataset_concat_ds.datasets: # 各ImageFolder (train or test)
                     if isinstance(imagefolder_ds, ImageFolder):
                         full_image_labels.extend(imagefolder_ds.targets)
                     else:
@@ -442,21 +443,21 @@ class TimeSeriesDataModule(pl.LightningDataModule):
             elif isinstance(self.full_dataset, ConcatDataset):
                 # シングルモーダルの場合 (ネストしたConcatDatasetを想定)
                 # self.full_dataset は self.full_image_dataset と同じ
-                # self.full_image_dataset.datasets は各銘柄のConcatDatasetのリスト
-                for symbol_concat_ds in self.full_dataset.datasets:
-                    if isinstance(symbol_concat_ds, ConcatDataset):
-                        # 各銘柄のConcatDataset内のImageFolder (train/test) を走査
-                        for imagefolder_ds in symbol_concat_ds.datasets:
+                # self.full_image_dataset.datasets は各データセットのConcatDatasetのリスト
+                for dataset_concat_ds in self.full_dataset.datasets:
+                    if isinstance(dataset_concat_ds, ConcatDataset):
+                        # 各データセットのConcatDataset内のImageFolder (train/test) を走査
+                        for imagefolder_ds in dataset_concat_ds.datasets:
                             if isinstance(imagefolder_ds, ImageFolder):
                                 full_labels.extend(imagefolder_ds.targets)
                             else:
-                                logger.warning(f"銘柄データセット内に予期しないタイプ: {type(imagefolder_ds)}")
-                    elif isinstance(symbol_concat_ds, ImageFolder):
+                                logger.warning(f"データセット内に予期しないタイプ: {type(imagefolder_ds)}")
+                    elif isinstance(dataset_concat_ds, ImageFolder):
                          # 万が一、ネストされていない場合 (以前の構造など)
                          logger.warning("予期しないデータ構造: ConcatDataset内に直接ImageFolderが見つかりました。")
-                         full_labels.extend(symbol_concat_ds.targets)
+                         full_labels.extend(dataset_concat_ds.targets)
                     else:
-                        logger.warning(f"全データセット内に予期しないタイプ: {type(symbol_concat_ds)}")
+                        logger.warning(f"全データセット内に予期しないタイプ: {type(dataset_concat_ds)}")
 
             elif isinstance(self.full_dataset, ImageFolder):
                 # 単一のImageFolderの場合 (通常は発生しないはず)

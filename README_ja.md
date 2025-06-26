@@ -6,12 +6,13 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-PyTorch Lightningを使用したEfficientNet/NFNetによる時系列画像分類のプロダクション対応深層学習プロジェクトです。選択式ファインチューニング技術による転移学習を実装し、多クラス分類タスクに対応。シングルモーダル（画像のみ）とマルチモーダル（画像＋時系列特徴量）の両方の学習アプローチをサポートします。
+PyTorch Lightningを使用したEfficientNet/NFNetによる時系列画像分類のプロダクション対応深層学習プロジェクトです。選択式ファインチューニング技術による転移学習を実装し、多クラス分類タスクに対応。シングルモーダル（画像のみ）とマルチモーダル（画像＋時系列特徴量）の両方の学習アプローチを単一の設定ファイルでサポートします。
 
 [日本語版README](README_ja.md) | [English README](README.md)
 
 ## 機能概要
 
+- **統合アーキテクチャ**: 単一の設定ファイルで`model_mode`切り替えによるシングルモーダル/マルチモーダル学習
 - **モデル選択可能な転移学習**: 事前学習済みEfficientNet-B4またはNFNet-F0（フォールバック：ResNet18）による設定可能なファインチューニングアプローチ
 - **マルチモーダルサポート**: シングルモーダル（画像のみ）およびマルチモーダル（画像＋数値時系列特徴量）対応
 - **選択式ファインチューニング**: ステージ毎差分学習率または段階的凍結解除の選択が可能
@@ -21,6 +22,32 @@ PyTorch Lightningを使用したEfficientNet/NFNetによる時系列画像分類
 - **特徴量エンジニアリング**: LightGBMベースの特徴量重要度分析と自動設定更新
 - **ハイパーパラメータ最適化**: 自動ハイパーパラメータチューニングのためのOptuna統合
 - **クロスプラットフォーム**: ローカル開発およびGoogle Colab環境サポート
+
+## アーキテクチャモード
+
+### モード設定
+プロジェクトは単一の設定ファイルで両モードをサポート：
+
+```yaml
+# シングルモーダルモード（画像のみ）
+model_mode: single
+
+# マルチモーダルモード（画像 + 時系列特徴量）
+model_mode: multi
+```
+
+### シングルモーダルモード（model_mode: single）
+- **入力**: 画像データのみ
+- **モデル**: EfficientNet/NFNetによる画像分類
+- **用途**: 画像チャートパターンのみを使用した予測
+
+### マルチモーダルモード（model_mode: multi）  
+- **入力**: 画像データ + 時系列数値特徴量
+- **モデル**: 
+  - 画像特徴量抽出器（EfficientNet/NFNet）
+  - 時系列特徴量処理（Transformer + 分類器）
+  - 特徴量融合層
+- **用途**: チャートパターンと数値特徴量を組み合わせた高精度予測
 
 ## F1スコアによる最適化の理由
 
@@ -122,74 +149,80 @@ feature_analysis/colab_runner_current.ipynb
 
 ## データセット構造
 
-### 必要なフォルダ構成
+プロジェクトは`data/`ディレクトリ内に画像データセットと時系列データを格納します。サンプルデータが含まれているため、すぐに動作確認が可能です。
+
+### ディレクトリ構成
 
 ```
-project_root/
-├── data/
-│   ├── dataset_a_15m_winsize40/
-│   │   ├── train/
-│   │   │   ├── Class_A/
-│   │   │   │   ├── dataset_a_15m_20240101_0900_label_0.png
-│   │   │   │   └── ...
-│   │   │   ├── Class_B/
-│   │   │   └── Class_C/
-│   │   ├── val/
-│   │   └── test/
-│   ├── dataset_b_15m_winsize40/
-│   ├── dataset_c_15m_winsize40/
-│   └── fix_labeled_data_dataset_a_15m.csv  # マルチモーダル用ラベル
+data/
+├── README.md                              # データ構造の詳細説明
+├── fix_labeled_data_timeseries_15m.csv   # 正解ラベルファイル（サンプル）
+├── timeseries_15m_202412301431.csv       # 特徴量ファイル（サンプル）
+├── dataset_a_15m_winsize40/              # データセットA（画像データ）
+│   ├── README.md                         # 画像データ要件
+│   ├── train/                            # 訓練用データ
+│   │   ├── class_0/                      # クラス0画像（ラベル0）
+│   │   ├── class_1/                      # クラス1画像（ラベル1）
+│   │   └── class_2/                      # クラス2画像（ラベル2）
+│   └── test/                             # テスト用データ
+│       ├── class_0/                      # クラス0画像（ラベル0）
+│       ├── class_1/                      # クラス1画像（ラベル1）
+│       └── class_2/                      # クラス2画像（ラベル2）
+├── dataset_b_15m_winsize40/              # データセットB（同様の構造）
+│   ├── README.md
+│   ├── train/
+│   │   ├── class_0/
+│   │   ├── class_1/
+│   │   └── class_2/
+│   └── test/
+│       ├── class_0/
+│       ├── class_1/
+│       └── class_2/
+└── dataset_c_15m_winsize40/              # データセットC（同様の構造）
+    ├── README.md
+    ├── train/
+    │   ├── class_0/
+    │   ├── class_1/
+    │   └── class_2/
+    └── test/
+        ├── class_0/
+        ├── class_1/
+        └── class_2/
 ```
 
-### ファイル命名規則
+### サンプルデータ
 
-#### 画像ファイル
-```
-{dataset_name}_{timeframe}_{YYYYMMDD}_{HHMM}_label_{class_id}.png
-```
+リポジトリには以下のサンプルデータが含まれています：
 
-例：
-- `dataset_a_15m_20240101_0900_label_0.png` → Class_A（ラベル0）
-- `dataset_a_15m_20240101_0915_label_1.png` → Class_B（ラベル1）
+1. **`fix_labeled_data_timeseries_15m.csv`**: マルチモーダル学習用の正解ラベルデータ
+   - timestamp, action, dataset_id カラム
+   - アクション分類（0: class_0, 1: class_1, 2: class_2）
 
-#### 時系列データ（マルチモーダル用）
-```
-{dataset_name}_{timeframe}_{YYYYMMDD}{HHMM}.csv
-```
+2. **`timeseries_15m_202412301431.csv`**: マルチモーダル学習用の数値特徴量データ
+   - timestamp, feature_1〜6, dataset_id カラム
+   - 6次元の時系列特徴量
 
-例：
-- `dataset_a_15m_202412301431.csv` → 2024-12-30 14:31のデータ
+3. **`dataset_*/README.md`**: 各データセットディレクトリの画像要件説明
+   - 画像形式要件（PNG/JPG、一貫したサイズ）
+   - ディレクトリ構造
+   - クラス別の説明
 
-### 設定例
+### マルチモーダル学習の動作フロー
 
-#### ローカル環境（`configs/config.yaml`）
-```yaml
-# データディレクトリ設定
-data_dir: "./data"
+1. **ラベル取得**: 画像ファイルのディレクトリ構造（`class_0/`, `class_1/`, `class_2/`）からラベルを取得
+2. **タイムスタンプ抽出**: 画像ファイル名から日時情報を抽出
+3. **特徴量マッチング**: 抽出したタイムスタンプで特徴量CSVから対応する時系列データを取得
+4. **マルチモーダル入力**: 画像データ + 時系列特徴量データを組み合わせて学習
 
-# データセットディレクトリ
-dataset_a_dir: "./data/dataset_a_15m_winsize40"
-dataset_b_dir: "./data/dataset_b_15m_winsize40"
-dataset_c_dir: "./data/dataset_c_15m_winsize40"
+### 実データの準備
 
-# 使用するデータセット
-datasets: ["dataset_a", "dataset_b", "dataset_c"]
-```
+実際の学習には、以下のデータを準備してください：
 
-#### マルチモーダル設定
-```yaml
-model_mode: "multi"
-
-# 時系列データ設定
-timeseries:
-  data_path: "./data/fix_labeled_data_dataset_a_15m.csv"
-  feature_columns: ["feature_1", "feature_2", "feature_3", "feature_4", "feature_5", "feature_6"]
-  window_size: 40
-
-# クラス設定
-num_classes: 3
-class_names: ["Class_A", "Class_B", "Class_C"]
-```
+1. **画像データ**: 各データセットの`train/`と`test/`ディレクトリに画像を配置
+   - ファイル名は`{dataset_name}_15m_{YYYYMMDD}{HHMM}_label_{class_id}.png`形式
+2. **特徴量データ**: マルチモーダル学習用の6次元特徴量CSVファイルを`data/`ディレクトリに配置
+   - ファイル名は`timeseries_15m_YYYYMMDDHHMM.csv`形式
+3. **タイムスタンプ整合性**: 画像ファイル名のタイムスタンプと特徴量CSVのタイムスタンプが一致している必要があります
 
 ## 高度な機能
 

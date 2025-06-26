@@ -36,13 +36,9 @@ def main():
     if is_running_in_colab():
         print("Google Colab 環境を検出しました。")
         config_file = "config_for_google_colab.yaml"
-        # Colab環境用のプロジェクトルートを上書き (config_utils.pyに依存しない場合)
-        # project_root = '/content/drive/MyDrive/Time_Series_Classifier'
     else:
         print("ローカル環境で実行します。")
         config_file = "config.yaml"
-        # ローカル環境用のプロジェクトルートを上書き (config_utils.pyに依存しない場合)
-        # project_root = './Time_Series_Classifier'
 
     config_path = os.path.join(project_root, "configs", config_file)
 

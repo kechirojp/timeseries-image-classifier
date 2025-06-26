@@ -225,18 +225,41 @@ tensorboard --logdir="./logs/single/nfnet"
 ```
 project_root/
 ├── data/
-│   ├── dataset_a_15m_winsize40/
-│   │   ├── train/
-│   │   │   ├── Class_A/
+│   ├── README.md                                # Data structure documentation
+│   ├── fix_labeled_data_timeseries_15m.csv     # Label file (sample)
+│   ├── timeseries_15m_202412301431.csv         # Feature file (sample)
+│   ├── dataset_a_15m_winsize40/                # Dataset A (image data)
+│   │   ├── README.md                           # Image data requirements
+│   │   ├── train/                              # Training data
+│   │   │   ├── class_0/                        # Class 0 images (label 0)
 │   │   │   │   ├── dataset_a_15m_20240101_0900_label_0.png
 │   │   │   │   └── ...
-│   │   │   ├── Class_B/
-│   │   │   └── Class_C/
-│   │   ├── val/
+│   │   │   ├── class_1/                        # Class 1 images (label 1)
+│   │   │   └── class_2/                        # Class 2 images (label 2)
+│   │   └── test/                               # Test data
+│   │       ├── class_0/                        # Class 0 images (label 0)
+│   │       ├── class_1/                        # Class 1 images (label 1)
+│   │       └── class_2/                        # Class 2 images (label 2)
+│   ├── dataset_b_15m_winsize40/                # Dataset B (same structure)
+│   │   ├── README.md
+│   │   ├── train/
+│   │   │   ├── class_0/
+│   │   │   ├── class_1/
+│   │   │   └── class_2/
 │   │   └── test/
-│   ├── dataset_b_15m_winsize40/
-│   ├── dataset_c_15m_winsize40/
-│   └── fix_labeled_data_dataset_a_15m.csv  # Multi-modal labels
+│   │       ├── class_0/
+│   │       ├── class_1/
+│   │       └── class_2/
+│   └── dataset_c_15m_winsize40/                # Dataset C (same structure)
+│       ├── README.md
+│       ├── train/
+│       │   ├── class_0/
+│       │   ├── class_1/
+│       │   └── class_2/
+│       └── test/
+│           ├── class_0/
+│           ├── class_1/
+│           └── class_2/
 ```
 
 ### File Naming Conventions
@@ -247,8 +270,8 @@ project_root/
 ```
 
 Examples:
-- `dataset_a_15m_20240101_0900_label_0.png` → Class_A (label 0)
-- `dataset_a_15m_20240101_0915_label_1.png` → Class_B (label 1)
+- `dataset_a_15m_20240101_0900_label_0.png` → class_0 (label 0)
+- `dataset_a_15m_20240101_0915_label_1.png` → class_1 (label 1)
 
 #### Time-Series Data (Multi-modal)
 ```
@@ -280,14 +303,23 @@ model_mode: "multi"
 
 # Time-series data settings
 timeseries:
-  data_path: "./data/fix_labeled_data_dataset_a_15m.csv"
+  data_path: "./data/timeseries_15m_202412301431.csv"
   feature_columns: ["feature_1", "feature_2", "feature_3", "feature_4", "feature_5", "feature_6"]
   window_size: 40
 
 # Class settings
 num_classes: 3
-class_names: ["Class_A", "Class_B", "Class_C"]
+class_names: ["class_0", "class_1", "class_2"]
 ```
+
+### Multi-modal Learning Workflow
+
+1. **Label Extraction**: Labels are obtained from image directory structure (`class_0/`, `class_1/`, `class_2/`)
+2. **Timestamp Extraction**: Extract datetime from image filenames (e.g., `dataset_a_15m_202401020930_label_1.png` → `2024-01-02 09:30:00`)
+3. **Feature Matching**: Match extracted timestamps with corresponding time-series data from feature CSV
+4. **Multi-modal Input**: Combine image data + time-series feature data for training
+
+**Important**: Image filename timestamps must match feature CSV timestamps for proper alignment.
 
 ## Troubleshooting
 

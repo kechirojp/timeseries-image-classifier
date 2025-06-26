@@ -129,7 +129,6 @@ dmypy.json
 .pyre/
 
 # Project specific
-data/
 checkpoints/
 lightning_logs/
 logs/
@@ -142,6 +141,14 @@ logs/
 !README.md
 !clean.md
 
+# Data files - exclude real data, keep sample data
+data/*.csv
+!data/fix_labeled_data_timeseries_15m.csv
+!data/timeseries_15m_202412301431.csv
+data/dataset_*/train/
+data/dataset_*/test/
+!data/dataset_*/README.md
+
 # Tuning results
 tuning/studies/
 tuning/visualization/
@@ -152,10 +159,14 @@ tuning/logs/
 feature_analysis/outputs/
 feature_analysis/models/
 
-# Dataset directories
-dataset_a_*/
-dataset_b_*/
-dataset_c_*/
+# Dataset directories - exclude actual image data, keep structure docs
+dataset_a_*/train/
+dataset_a_*/test/
+dataset_b_*/train/
+dataset_b_*/test/
+dataset_c_*/train/
+dataset_c_*/test/
+!dataset_*/README.md
 
 # IDE
 .vscode/
@@ -188,7 +199,8 @@ trading_strategy.py
 
 # Large CSV data files
 *.csv
-!**/sample*.csv  # Keep small sample files if any
+!data/fix_labeled_data_timeseries_15m.csv
+!data/timeseries_15m_202412301431.csv
 
 # LightGBM model files
 *.txt
@@ -198,3 +210,5 @@ lgbm_model.*
 *.md
 !README.md
 !README_ja.md
+!data/README.md
+!data/dataset_*/README.md

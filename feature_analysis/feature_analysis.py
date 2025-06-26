@@ -43,7 +43,7 @@ IMAGES_DIR = 'images'  # 画像を保存するサブディレクトリ名
 
 # --- 追加: ウィンドウサイズ定数 ---
 # 特徴量生成時のウィンドウサイズに合わせて設定 (例: 40)
-# config.yaml の nasdaq_dir パス名などから判断
+# config.yaml のデータセットディレクトリパス名などから判断
 WINDOW_SIZE = 40
 # ---------------------------------
 
@@ -103,46 +103,33 @@ def save_figure(fig: plt.Figure, name: str, output_base_dir: str):
         if not SHOW_FIGURES:
             plt.close(fig)
 
-# Google Colab環境かどうかを判定
-def is_running_in_colab() -> bool:
-    """
-    現在の実行環境がGoogle Colabかどうかを判定
-
-    Returns:
-        bool: Google Colab環境ならTrue、そうでなければFalse
-    """
-    try:
-        import google.colab
-        return True
-    except ImportError:
-        return False
-
-# プロジェクトルート取得関数 (threshold_optimizer.py と同様のもの)
+# プロジェクトルート取得関数
 def get_project_root() -> str:
-    """プロジェクトのルートディレクトリパスを取得する"""
-    if is_running_in_colab():
-        # Google Colab 環境のパス
-        return '/content/drive/MyDrive/NFNet_Classifier_pretrained'
-    else:
-        # ローカル環境のパス
-        return 'J:/マイドライブ/NFNet_Classifier_pretrained'
+    """プロジェクトのルートディレクトリパスを動的に取得する"""
+    # このスクリプトの絶対パスを取得
+    script_path = os.path.abspath(__file__)
+    # このスクリプトが配置されているディレクトリ (例: /path/to/project/feature_analysis)
+    script_dir = os.path.dirname(script_path)
+    # 親ディレクトリ（プロジェクトルート）
+    project_root = os.path.dirname(script_dir)
+    return project_root
 
 # 前処理関数
 def preprocess_data(actions_path: str, indicators_path: str) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[int, float]]: # 戻り値の型ヒントを修正
     """
-    株価データとアクションデータを読み込み、前処理を行う
+    時系列データとアクションデータを読み込み、前処理を行う
     
     Args:
         actions_path: アクションデータのCSVファイルパス
-        indicators_path: 株価指標データのCSVファイルパス
+        indicators_path: 時系列指標データのCSVファイルパス
     
     Returns:
         Tuple[pd.DataFrame, pd.DataFrame, Dict[int, float]]: 前処理後の特徴量DataFrame(X)、目的変数DataFrame(y)、クラス重み辞書
     """
     print(f"アクションデータを読み込み中: {actions_path}")
-    df_actions = pd.read_csv(actions_path, parse_dates=True, index_col='Datetime')
+    df_actions = pd.read_csv(actions_path, parse_dates=True, index_col='timestamp')
     
-    # カラム名の変更（必要な場合）
+    # ラベルのカラム名をactionsに統一
     if 'adjusted_signal' in df_actions.columns:
         df_actions = df_actions.rename(columns={'adjusted_signal': 'actions'})
     elif 'action' in df_actions.columns:
@@ -150,72 +137,19 @@ def preprocess_data(actions_path: str, indicators_path: str) -> Tuple[pd.DataFra
     elif 'label' in df_actions.columns:
         df_actions = df_actions.rename(columns={'label': 'actions'})
     
-    print(f"株価指標データを読み込み中: {indicators_path}")
-    df = pd.read_csv(indicators_path, parse_dates=True, index_col='Datetime')
+    print(f"時系列指標データを読み込み中: {indicators_path}")
+    df = pd.read_csv(indicators_path, parse_dates=True, index_col='timestamp')
     
-    # 不要なカラムを削除（存在する場合）
-    if "anomaly" in df.columns:
-        df = df.drop(["anomaly", "anomaly_peaks", "anomaly_valleys"], axis=1, errors='ignore')
+    # dataset_idカラムを除去
+    # 理由: dataset_idは単なるデータセット識別子であり、時系列データの予測に有用な情報を含まない
+    # 機械学習の特徴量として使用すると、データリークや過学習の原因となる可能性がある
+    # また、数値であってもカテゴリカル変数として扱うべきIDであり、回帰・分類の特徴量には不適切
+    if "dataset_id" in df.columns:
+        df = df.drop(["dataset_id"], axis=1, errors='ignore')
     
-    # 差分列の追加（Close価格の差分）
-    df['diff'] = np.insert(np.diff(df['Close']), 0, 0)
-    
-    # コメントアウトすると、事前に選別したカラム群のみを使用します
-    # 計算量を減らしたい場合に有効化してください
-    # ---------------------------------------------------------------------------
-    # '''
-    # 選択したカラム（ろうそく足 + 事前選別した重要指標）
-    selected_columns = [
-        'Close',
-        'Open',
-        'Adj Close',
-        'High',
-        'Low',
-        'diff',
-        'Volume',
-        'RSI',
-        'RSI_4',
-        'RSI_5',
-        'RSI_6',
-        'RSI_10',
-        'RSI_14',
-        'hour',
-        '5SMA',
-        'Volume_Ratio',
-        'Williams',
-        'Williams_4',
-        'Williams_5',
-        'Williams_6',
-        'Williams_10',
-        'PZO',
-        'VZO',
-        'UO',
-        'MFI_4',
-        'TMF',
-        '5TRIX',
-        'EVWMA',
-        'PPO_histo',
-        'MOM',
-        'TR',
-        'EFI',
-        'CCI',
-        'BASP_Buy',
-        'BASP_Sell',
-        'EBBP_Bull',
-        'EBBP_Bear',
-        'WOBV',
-        'FISH',
-        'PERCENT_B',
-        '%K',
-        '%D',
-        '%SD'
-    ]
-    # 選択したカラムが存在する場合のみ使用
-    selected_columns = [col for col in selected_columns if col in df.columns]
-    df = df[selected_columns]
-    print(f"選択されたカラム数: {len(selected_columns)}")
-    # '''
-    # ---------------------------------------------------------------------------
+    # 全ての拡張特徴量を使用（185個の特徴量）
+    print(f"拡張特徴量データを使用 - 利用可能なカラム数: {len(df.columns)}")
+    print(f"利用する特徴量の例: {list(df.columns[:10])}...")  # 最初の10個を表示
     
     # 特徴量として使用するカラムの選択
     # 対数変換前にカラム選択
@@ -263,6 +197,9 @@ def compare_n_estimators(X: pd.DataFrame, y: pd.DataFrame, n_estimators_list: Li
     Returns:
         pd.DataFrame: 各n_estimatorsでの結果を含むDataFrame
     """
+    total_rows = len(X)
+    train_end = int(total_rows * train_size)
+    
     base_params = {
         'objective': 'multiclass',
         'num_class': 3,
@@ -1066,8 +1003,8 @@ def main():
     output_dir = os.path.join(project_root, 'feature_analysis', 'outputs') # output_dir を定義
 
     # データパス
-    actions_path = os.path.join(project_root, 'data/fix_labeled_data_dataset_a_15m.csv')
-    indicators_path = os.path.join(project_root, 'data/dataset_a_15m_202412301431.csv')
+    actions_path = os.path.join(project_root, 'data/fix_labeled_data_timeseries_15m.csv')
+    indicators_path = os.path.join(project_root, 'data/timeseries_15m_202412301431.csv')
 
     # データの前処理
     X_orig, y_orig, class_weight_dict = preprocess_data(actions_path, indicators_path) # 元のデータを保持
@@ -1134,31 +1071,38 @@ def main():
     # Optunaの可視化関数はmatplotlibに依存するため、必要に応じてインポート
     try:
         # import matplotlib.pyplot as plt # main 関数の冒頭でインポート済み
-        import optuna.visualization.matplotlib as vis
-        # 日本語表示が必要な場合はjapanize_matplotlibをインポート
         try:
-            import japanize_matplotlib
-            japanize_matplotlib.japanize()
-            print("japanize_matplotlibを適用しました。")
+            import optuna.visualization.matplotlib as vis
+            optuna_vis_available = True
         except ImportError:
-            print("japanize_matplotlibが見つかりません。日本語が文字化けする可能性があります。")
+            print("optuna.visualization.matplotlibが利用できません。可視化をスキップします。")
+            optuna_vis_available = False
+            
+        # 日本語表示が必要な場合はjapanize_matplotlibをインポート
+        if optuna_vis_available:
+            try:
+                import japanize_matplotlib
+                japanize_matplotlib.japanize()
+                print("japanize_matplotlibを適用しました。")
+            except ImportError:
+                print("japanize_matplotlibが見つかりません。日本語が文字化けする可能性があります。")
 
         # 最適化履歴のプロットと保存
-        fig_opt_hist = vis.plot_optimization_history(study)
-        # save_figure の呼び出しで output_dir を渡す
-        save_figure(fig_opt_hist.figure, 'optimization_history', output_dir)
-        if SHOW_FIGURES: plt.show()
-        # else: plt.close(fig_opt_hist.figure) # save_figure内で閉じるので不要
+        if optuna_vis_available:
+            fig_opt_hist = vis.plot_optimization_history(study)
+            # save_figure の呼び出しで output_dir を渡す
+            save_figure(fig_opt_hist.figure, 'optimization_history', output_dir)
+            if SHOW_FIGURES: plt.show()
+            # else: plt.close(fig_opt_hist.figure) # save_figure内で閉じるので不要
 
         # パラメータ重要度のプロットと保存
-        fig_param_imp = vis.plot_param_importances(study)
-        # save_figure の呼び出しで output_dir を渡す
-        save_figure(fig_param_imp.figure, 'param_importances', output_dir)
-        if SHOW_FIGURES: plt.show()
-        # else: plt.close(fig_param_imp.figure) # save_figure内で閉じるので不要
+        if optuna_vis_available:
+            fig_param_imp = vis.plot_param_importances(study)
+            # save_figure の呼び出しで output_dir を渡す
+            save_figure(fig_param_imp.figure, 'param_importances', output_dir)
+            if SHOW_FIGURES: plt.show()
+            # else: plt.close(fig_param_imp.figure) # save_figure内で閉じるので不要
 
-    except ImportError:
-        print("matplotlib または optuna.visualization がインストールされていないため、最適化結果の可視化をスキップします。")
     except Exception as e: # 可視化中の予期せぬエラー
         print(f"最適化結果の可視化中にエラーが発生しました: {e}")
 

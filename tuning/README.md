@@ -14,12 +14,12 @@ Google Colab環境では、`optimize_for_google_colab.py` スクリプトを使�
 
 * モデルアーキテクチャ、データセットパス、基本的なトレーニング設定（例: `lr_head`、`lr_backbone`、`max_epochs` の上限）など、モデルとトレーニングの**基本設定**を定義します。
 * Optuna の各トライアルは、このファイルをベース設定として読み込みます。
-* ローカル環境でのパスは `J:/マイドライブ/NFNet_Classifier_pretrained` を基準とします。
+* ローカル環境でのパスは相対パス形式で設定されています。
 
 ### 2. `configs/config_for_google_colab.yaml` (プロジェクトルート)
 
 * Google Colab環境用の基本設定ファイルです。
-* ローカル環境の `configs/config.yaml` と同様の内容ですが、ファイルパスが Google Colab の絶対パス形式 (`/content/drive/MyDrive/NFNet_Classifier_pretrained/...`) になっています。
+* ローカル環境の `configs/config.yaml` と同様の内容ですが、ファイルパスが Google Colab の絶対パス形式 (`/content/drive/MyDrive/Time_Series_Classifier/...`) になっています。
 * データディレクトリやチェックポイントの保存先などが設定されています。
 * 差分学習率に関する設定（`lr_head`、`lr_backbone`）を含んでいます。
 
@@ -36,7 +36,7 @@ Google Colab環境では、`optimize_for_google_colab.py` スクリプトを使�
 ### 4. `tuning/config_for_google_colab.yaml` (このディレクトリ内)
 
 * Google Colab環境用のOptuna設定ファイルです。
-* 基本的な構造は `tuning/config.yaml` と同じですが、パスが Google Colab の絶対パス形式 (`/content/drive/MyDrive/NFNet_Classifier_pretrained/...`) になっています。
+* 基本的な構造は `tuning/config.yaml` と同じですが、パスが Google Colab の絶対パス形式 (`/content/drive/MyDrive/Time_Series_Classifier/...`) になっています。
 * Colabのリソース制約を考慮して、試行回数やエポック数が調整されています。
 * `parallel.n_jobs` は Colab では `1` に設定することを推奨します。
 
@@ -88,7 +88,7 @@ Google Colab環境では、`optimize_for_google_colab.py` スクリプトを使�
 
 1. **設定の確認:** `configs/config.yaml` と `tuning/config.yaml` の設定が正しいことを確認します。特に `tuning/config.yaml` の `parameter_ranges` と `study.tuning_max_epochs` を確認してください。
 
-2. **スクリプトの実行:** プロジェクトのルートディレクトリ (`J:/マイドライブ/NFNet_Classifier_pretrained`) から、以下のコマンドを実行します。
+2. **スクリプトの実行:** プロジェクトのルートディレクトリから、以下のコマンドを実行します。
 
    ```bash
    python tuning/optimize.py
@@ -101,7 +101,7 @@ Google Colab環境では、`optimize_for_google_colab.py` スクリプトを使�
 
 1. **Colabノートブックを開く:** `tuning/colab_runner.ipynb` を Google Colab で開きます。
 2. **Driveのマウント:** ノートブック内の指示に従って Google Drive をマウントします (`/content/drive`)。
-3. **プロジェクトディレクトリへの移動:** ノートブック内で `%cd /content/drive/MyDrive/NFNet_Classifier_pretrained` を実行します。
+3. **プロジェクトディレクトリへの移動:** ノートブック内で `%cd /content/drive/MyDrive/Time_Series_Classifier` を実行します。
 4. **設定の確認:** `configs/config_for_google_colab.yaml` と `tuning/config_for_google_colab.yaml` が正しく設定されていることを確認します。
 5. **環境のセットアップ:** ノートブック内のセルを実行して、必要なライブラリをインストールします。
 6. **最適化の実行:** 以下のセルを実行します：
@@ -133,10 +133,10 @@ python tuning/check_study.py
 
 スクリプトを実行すると、設定ファイルで指定された場所に以下のファイルやディレクトリが生成されます。
 
-* **Optuna データベース:** `./studies/study.db` (ローカル) または `/content/drive/MyDrive/NFNet_Classifier_pretrained/tuning/studies/study_colab.db` (Colab) - 最適化の全履歴が保存されます。
-* **トライアルログ:** `./logs/trial_N` (ローカル) または `/content/drive/MyDrive/NFNet_Classifier_pretrained/tuning/logs/trial_N` (Colab) - 各トライアルの TensorBoard ログ。
-* **トライアルチェックポイント:** `./checkpoints/trial_N` (ローカル) または `/content/drive/MyDrive/NFNet_Classifier_pretrained/tuning/checkpoints/trial_N` (Colab) - 各トライアルで最も性能の良かったモデルのチェックポイント。
-* **可視化結果:** `./visualization` (ローカル) または `/content/drive/MyDrive/NFNet_Classifier_pretrained/tuning/visualization` (Colab)
+* **Optuna データベース:** `./studies/study.db` (ローカル) または `/content/drive/MyDrive/Time_Series_Classifier/tuning/studies/study_colab.db` (Colab) - 最適化の全履歴が保存されます。
+* **トライアルログ:** `./logs/trial_N` (ローカル) または `/content/drive/MyDrive/Time_Series_Classifier/tuning/logs/trial_N` (Colab) - 各トライアルの TensorBoard ログ。
+* **トライアルチェックポイント:** `./checkpoints/trial_N` (ローカル) または `/content/drive/MyDrive/Time_Series_Classifier/tuning/checkpoints/trial_N` (Colab) - 各トライアルで最も性能の良かったモデルのチェックポイント。
+* **可視化結果:** `./visualization` (ローカル) または `/content/drive/MyDrive/Time_Series_Classifier/tuning/visualization` (Colab)
 
 ## 依存関係
 
