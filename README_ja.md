@@ -318,9 +318,9 @@ tensorboard --logdir="./logs/single/nfnet"
 ```bibtex
 @software{timeseries_image_classifier,
   title={Time-Series Image Classifier},
-  author={Your Name},
+  author={kechirojp},
   year={2025},
-  url={https://github.com/yourusername/timeseries-image-classifier}
+  url={https://github.com/kechirojp/timeseries-image-classifier}
 }
 ```
 
