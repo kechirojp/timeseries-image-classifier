@@ -55,7 +55,9 @@ F1スコアの主要応用：
 
 1. リポジトリをクローンします
 2. **オプションA: ローカルセットアップ**
-   - 依存パッケージをインストール: `pip install -r requirements.txt`
+   - PyTorch（CUDA対応版）をインストール: `pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121`
+   - その他の依存パッケージをインストール: `pip install -r requirements.txt`
+   - Optuna統合をインストール: `pip install optuna-integration[pytorch_lightning]`
 3. **オプションB: Dockerセットアップ**
    - Docker Hubから取得: `docker pull kechiro/timeseries-image-classifier:latest`
    - またはローカルビルド: `./build-docker.sh`

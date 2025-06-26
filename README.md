@@ -55,7 +55,9 @@ Key F1-score applications:
 
 1. Clone the repository
 2. **Option A: Local Setup**
-   - Install dependencies: `pip install -r requirements.txt`
+   - Install PyTorch with CUDA support: `pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121`
+   - Install other dependencies: `pip install -r requirements.txt`
+   - Install Optuna integration: `pip install optuna-integration[pytorch_lightning]`
 3. **Option B: Docker Setup**
    - Pull from Docker Hub: `docker pull kechiro/timeseries-image-classifier:latest`
    - Or build locally: `./build-docker.sh`
