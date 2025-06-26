@@ -1,0 +1,28 @@
+# Dev Containers用のDocker Compose設定
+version: '3.8'
+
+# サービス定義
+services:
+  # アプリケーションサービス
+  app:
+    # 既存のdocker-compose.ymlを継承しつつ拡張
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/app
+      - ~/.ssh:/root/.ssh # SSHキーなどを共有する場合
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # 開発用の追加設定
+    environment:
+      - PYTHONPATH=/app
+      - NVIDIA_VISIBLE_DEVICES=all
+    # 常時稼働
+    tty: true
+    command: sleep infinity

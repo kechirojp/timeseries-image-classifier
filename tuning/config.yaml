@@ -1,0 +1,184 @@
+# Optunaによるハイパーパラメータ最適化の設定
+
+# =====================================================================
+# 事前最適化の設定 (現在有効)
+# =====================================================================
+# 最適化の基本設定
+study:
+  name: "efficientnet_b4_optimization"  # モデル名を反映
+  direction: "maximize"  # val_f1を最大化するために "maximize" に設定
+  metric: "val_f1"      # 最適化する評価指標
+  n_trials: 40         # 試行回数
+  timeout: 172800       # タイムアウト (秒) - 48時間
+  tuning_max_epochs: 30 # チューニング用エポック数
+  is_post_training: false  # 事後最適化フラグ：false=事前最適化
+  # checkpoint_pathは事前最適化では使用しません
+  # fine_tuning_epochsは事前最適化では使用しません
+
+# =====================================================================
+# 事後最適化の設定 (参照用にコメントアウト)
+# =====================================================================
+# study:
+#   name: "efficientnet_b4_post_training"  # 事後最適化用に名前を変更
+#   direction: "maximize"
+#   metric: "val_f1"
+#   n_trials: 40         # 試行回数
+#   timeout: 172800       # タイムアウト (秒) - 48時間
+#   # tuning_max_epochs: 20 # 39 # 事後最適化用エポック数 - checkpointのエポック数に合わせて調整 29エポックのデータで10エポック追加したいなら39
+#   is_post_training: true  # 事後最適化フラグ：true=事後最適化
+#   checkpoint_path: "./checkpoints/single/efficientnet_b4/epoch=00029-val_loss=0.5772-val_f1=0.7140.ckpt"  # 事後最適化で使用するチェックポイント
+#   fine_tuning_epochs: 10  # 事後最適化時の微調整エポック数 (通常は事前最適化より少なめに設定)
+
+
+# =====================================================================
+# 事前最適化のハイパーパラメータ範囲 (現在有効)
+# =====================================================================
+# 探索するハイパーパラメータの範囲
+parameter_ranges:
+  # 学習率関連 - 差分学習率戦略向けに調整
+  lr_head:
+    low: 5e-5
+    high: 5e-3
+    log: true  # 対数スケールで探索（広い範囲を効率的に探索）
+  lr_backbone:
+    low: 5e-6
+    high: 5e-4
+    log: true  # 対数スケールで探索（広い範囲を効率的に探索）
+  lr_decay_rate:
+    low: 0.1
+    high: 0.5
+
+  # EfficientNet設定
+  drop_path_rate:
+    low: 0.1
+    high: 0.3
+  agc_clip_factor:
+    low: 0.001
+    high: 0.1
+    log: true
+
+  # トレーニング設定
+  batch_size:
+    choices: [8, 12, 16, 24, 32, 40] # EfficientNet_B4はモデルサイズが大きいため小さめに設定
+  weight_decay:
+    low: 0.01
+    high: 0.1
+    log: true
+  # 補助損失の重み - 今後のモデル改造に備えて追加
+  aux_loss_weight:
+    low: 0.0
+    high: 0.5
+
+  # 段階的凍結解除設定は残すが、使用していないことをコメントで明記
+  # 注意: 現在は差分学習率戦略を採用しているため、この設定は使用されません
+  # (base_configのuse_progressive_unfreezing=falseが優先されます)
+  auto_unfreeze:
+    enabled: false  # 重要: 段階的凍結解除を無効化
+    stage1_min: 5
+    stage1_max: 15
+    stage2_offset_min: 5
+    stage2_offset_max: 20
+    stage3_offset_min: 15
+    stage3_offset_max: 30
+
+# =====================================================================
+# 事後最適化のハイパーパラメータ範囲 (参照用にコメントアウト)
+# =====================================================================
+# parameter_ranges:
+#   # 学習率関連 - 事後最適化では学習率を小さく設定
+#   lr_head:
+#     low: 5e-6  # 事後最適化では低めの値
+#     high: 1e-3  # 事後最適化では低めの値
+#     log: true  # 対数スケールで探索（広い範囲を効率的に探索）
+#   lr_backbone:
+#     low: 5e-7  # 事後最適化ではより小さく
+#     high: 1e-4  # 事後最適化ではより小さく
+#     log: true  # 対数スケールで探索
+#   lr_decay_rate:
+#     low: 0.1
+#     high: 0.5
+#   drop_path_rate:
+#     low: 0.1
+#     high: 0.3
+#   agc_clip_factor:
+#     low: 0.001
+#     high: 0.1
+#     log: true
+#   batch_size:
+#     choices:
+#     - 8
+#     - 12
+#     - 16
+#     - 24
+#     - 32
+#     - 40
+#   weight_decay:
+#     low: 0.01
+#     high: 0.1
+#     log: true
+#   aux_loss_weight:
+#     low: 0.0
+#     high: 0.5
+#   # 段階的凍結解除設定 - 事後最適化では不要なため無効化
+#   auto_unfreeze:
+#     enabled: false  # 重要: 段階的凍結解除を無効化
+#     # stage1_min: 5  # 事後最適化では使用しない
+#     # stage1_max: 15  # 事後最適化では使用しない
+#     # stage2_offset_min: 5  # 事後最適化では使用しない
+#     # stage2_offset_max: 20  # 事後最適化では使用しない
+#     # stage3_offset_min: 15  # 事後最適化では使用しない
+#     # stage3_offset_max: 30  # 事後最適化では使用しない
+
+# =====================================================================
+# 事前最適化の保存設定 (現在有効)
+# =====================================================================
+# 保存設定
+storage:
+  type: "sqlite"
+  path: "./tuning/studies/efficientnet_b4_study.db"  # プロジェクトルートからの相対パス
+
+output:
+  # チェックポイントディレクトリのベース (各トライアルは{model_mode}/{model_architecture_name}/trial_{N}に保存される)
+  log_dir: "./tuning/logs"
+  checkpoint_dir: "./tuning/checkpoints"
+
+# 並列化設定
+parallel:
+  n_jobs: 3  # -1は利用可能なすべてのCPUを使用
+
+# 可視化設定
+visualization:
+  create_plots: true
+  save_dir: "./tuning/visualization"
+  plot_types:
+    - "optimization_history"
+    - "param_importances"
+    - "parallel_coordinate"
+    - "slice_plot"
+    - "contour_plot"
+
+# =====================================================================
+# 事後最適化の保存設定 (参照用にコメントアウト)
+# =====================================================================
+# storage:
+#   type: "sqlite"
+#   path: "./tuning/studies/efficientnet_b4_post_training_study.db"  # 事後最適化用の新しいDBファイル
+# 
+# output:
+#   log_dir: "./tuning/logs_post_training"  # 事後最適化用のログディレクトリ
+#   checkpoint_dir: "./tuning/checkpoints_post_training"  # 事後最適化用のチェックポイントディレクトリ
+# 
+# # 並列化設定
+# parallel:
+#   n_jobs: 3  # 事後最適化でのパラレル実行数
+# 
+# # 可視化設定
+# visualization:
+#   create_plots: true
+#   save_dir: "./tuning/visualization_post_training"  # 事後最適化用の可視化ディレクトリ
+#   plot_types:
+#     - "optimization_history"
+#     - "param_importances"
+#     - "parallel_coordinate"
+#     - "slice_plot"
+#     - "contour_plot"

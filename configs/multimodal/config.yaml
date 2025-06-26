@@ -1,0 +1,136 @@
+# --- モデルモード ---
+# モデルの種類を指定 (single or multi)
+model_mode: multi
+
+# --- 転移学習戦略フラグ ---
+# 段階的凍結解除を使用するかどうか (true: 段階的凍結解除, false: ステージ毎差分学習率)
+# マルチモーダルの場合、画像バックボーンにのみ適用される
+use_progressive_unfreezing: false
+
+# --- 段階的ファインチューニング設定 (use_progressive_unfreezing: true の場合のみ有効) ---
+auto_unfreeze:
+  stage1_epoch: 20    # 画像バックボーンの最終ステージ解凍
+  stage2_epoch: 30  # 画像バックボーンの次のステージ解凍
+  stage3_epoch: 40   # 画像バックボーンのさらに次のステージ解凍
+
+# --- 学習率設定 ---
+# ※注意: 以下の値は以前のOptuna最適化結果です。
+#         マルチモーダル用に再調整が必要な場合があります。
+# lr_head: 3e-4        # ヘッド部分の学習率 (デフォルト)
+lr_head: 0.00022601791640145834 # ヘッド部分の学習率 (Optuna best trial)
+
+# lr_backbone: 3e-5    # バックボーン基本学習率 (画像・Transformer共通) (デフォルト)
+lr_backbone: 3.111399384449112e-05 # バックボーン基本学習率 (Optuna best trial)
+
+# lr_decay_rate: 0.1   # 画像バックボーン層ごとの学習率減衰率 (デフォルト)
+lr_decay_rate: 0.16301806494097865 # 層ごとの学習率減衰率 (Optuna best trial)
+
+scheduler: cosine   # コサインスケジューリングを使用
+
+# --- NFNetの勾配クリッピング設定 ---
+# 画像バックボーンがNFNet系の場合に有効
+use_agc: true             # Adaptive Gradient Clippingを有効化
+
+# agc_clip_factor: 0.01     # AGCのクリップ係数 (デフォルト)
+agc_clip_factor: 0.0017968350544392772 # AGCのクリップ係数 (Optuna best trial)
+
+agc_eps: 1e-3             # AGCの安定化係数
+
+# --- その他の設定 ---
+# batch_size: 128  # バッチサイズ (デフォルト)
+batch_size: 64 # バッチサイズ (Optuna best trial)
+max_epochs: 100  # 最大エポック数
+
+# --- 損失関数の重み ---
+# aux_loss_weight: 0.5 # 補助損失の重み (デフォルト, NFNet用)
+aux_loss_weight: 0.6796881852487202 # 補助損失の重み (Optuna best trial)
+
+# --- オプティマイザ設定 ---
+# weight_decay: 0.01 # 重み減衰 (デフォルト)
+weight_decay: 0.030702934650960335 # 重み減衰 (Optuna best trial)
+
+# --- トレーナー設定 ---
+precision: '16-mixed' # 混合精度計算
+accumulate_grad_batches: 2 # 勾配累積ステップ数
+early_stopping_patience: 10 # val_f1 がこのエポック数改善しなかったら停止
+log_every_n_steps: 50 # ログ記録頻度
+
+# --- ハードウェア設定 (Google Colab) ---
+force_gpu: true # GPUを強制的に使用
+force_cpu: false
+num_workers: 4 # Google Colab環境では4以上推奨
+persistent_workers: true # num_workers > 0 の場合はTrue推奨
+pin_memory: true # GPU使用時は通常true
+prefetch_factor: 2 # num_workers > 0 の場合は2以上推奨
+
+# --- データセット設定 ---
+# データセットの分割数
+num_folds: 5
+# 使用するフォールド番号 (0から num_folds-1)
+fold: 0
+
+# 乱数シード
+seed: 42
+
+# 画像リサイズサイズ
+image_size: 336
+
+# --- 時系列データ設定 ---
+timeseries:
+  # 使用する特徴量のカラム名リスト
+  feature_columns: ['PZO', 'TMF', 'diff', 'Williams_4', 'MFI_4', '%SD']
+  # 時系列特徴量の次元数 (feature_columnsの数と一致させる)
+  feature_dim: 6
+  # ウィンドウサイズ (シーケンス長)
+  window_size: 40
+
+# データセット情報 (可視化用)
+class_names: ['Sell', 'Buy', 'Hold'] # クラス名
+dataset_mean: [0.485, 0.456, 0.406] # ImageNetの平均値 (データに合わせて変更)
+dataset_std: [0.229, 0.224, 0.225]  # ImageNetの標準偏差 (データに合わせて変更)
+
+# --- 画像モデル設定 ---
+model:
+  # 画像バックボーンのタイプ
+  type: "nfnet-f0"
+  # drop_path_rate: 0.2 # ドロップパス率 (デフォルト)
+  drop_path_rate: 0.23300866774954063 # ドロップパス率 (Optuna best trial)
+  use_se: true        # SEブロックを有効化 (NFNet用)
+
+# --- Transformer設定 ---
+transformer:
+  dim: 128            # Transformer内部の次元数
+  layers: 2           # Transformerエンコーダ層の数
+  heads: 4            # Multi-Head Attentionのヘッド数
+  dropout: 0.1        # Transformer内のDropout率
+  ff_dim: 512         # FeedForward層の次元数 (dim * 4 が一般的)
+
+# --- 最終分類器設定 ---
+classifier:
+  dropout1: 0.3       # 最初のDropout率
+  dropout2: 0.2       # 2番目のDropout率
+
+# --- データディレクトリ設定 (ローカル) ---
+# プロジェクトルート
+base_dir: J:/マイドライブ/NFNet_Classifier_pretrained
+# データディレクトリ (CSVファイルなど)
+data_dir: J:/マイドライブ/NFNet_Classifier_pretrained/data
+# ログディレクトリ (モード別に分けることを推奨)
+logs_dir: J:/マイドライブ/NFNet_Classifier_pretrained/logs/multimodal
+# チェックポイントディレクトリ (モード別に分けることを推奨)
+checkpoint_dir: J:/マイドライブ/NFNet_Classifier_pretrained/checkpoints/multimodal
+
+# --- 複数銘柄の画像/時系列データディレクトリ設定 (Google Colab) ---
+# シンボルリスト (利用可能な全銘柄)
+symbols: ["nasdaq100", "GER30", "US30"]
+
+# 各銘柄のデータディレクトリ (画像と時系列データを含む想定)
+nasdaq100_dir: J:/マイドライブ/NFNet_Classifier_pretrained/nasdaq100_15m_winsize40
+GER30_dir: J:/マイドライブ/NFNet_Classifier_pretrained/GER30_15m_winsize40
+US30_dir: J:/マイドライブ/NFNet_Classifier_pretrained/US30_15m_winsize40
+
+# --- デバッグ・その他設定 ---
+check_data: false
+debug: false
+gpu_debug: false
+resume_from_checkpoint: null # チェックポイントから再開する場合はパスを指定 (例: "last.ckpt")

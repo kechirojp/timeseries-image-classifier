@@ -1,0 +1,77 @@
+dataset_a_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_a_15m_winsize40
+dataset_b_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_b_15m_winsize40
+dataset_c_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_c_15m_winsize40
+accumulate_grad_batches: 2
+agc_clip_factor: 0.05449588573832388
+agc_eps: 1e-3
+auto_unfreeze:
+  stage1_epoch: 20
+  stage2_epoch: 30
+  stage3_epoch: 40
+aux_loss_weight: 0.2587019580535172
+base_dir: /content/drive/MyDrive/Time_Series_Classifier
+batch_size: 40
+check_data: false
+checkpoint_dir: /content/drive/MyDrive/Time_Series_Classifier/checkpoints
+class_names:
+- Class_A
+- Class_B
+- Class_C
+data_dir: /content/drive/MyDrive/Time_Series_Classifier/data
+dataset_mean:
+- 0.485
+- 0.456
+- 0.406
+dataset_std:
+- 0.229
+- 0.224
+- 0.225
+debug: false
+early_stopping_patience: 10
+fold: 0
+force_cpu: false
+force_gpu: false
+gpu_debug: false
+image_size: 380
+log_every_n_steps: 50
+logs_dir: /content/drive/MyDrive/Time_Series_Classifier/logs
+lr_backbone: 0.0003651232342099075
+lr_decay_rate: 0.397981145024631
+lr_head: 0.0022754797344858332
+max_epochs: 100
+model:
+  classifier_dropout1: 0.3
+  classifier_dropout2: 0.2
+  drop_path_rate: 0.20889964802961225
+  type: efficientnet_b4
+model_architecture_name: efficientnet_b4
+model_mode: single
+nasdaq100_dir: /content/drive/MyDrive/Time_Series_Classifier/data/dataset_a_15m_winsize40
+num_folds: 5
+num_workers: 4
+persistent_workers: true
+pin_memory: true
+precision: 16-mixed
+prefetch_factor: 2
+reasoning_dim: 3
+resume_from_checkpoint: /content/drive/MyDrive/Time_Series_Classifier/checkpoints/singlemodal/efficientnet_b4_trial24_val_f1-val_f1=0.7180_val_loss-val_loss=0.5636_lrh2.3e-03_lrb3.7e-04.ckpt
+scheduler: cosine
+seed: 42
+datasets:
+- dataset_a
+- dataset_b
+- dataset_c
+timeseries:
+  feature_columns:
+  - feature_1
+  - feature_2
+  - feature_3
+  - feature_4
+  - feature_5
+  - feature_6
+  feature_dim: 6
+  window_size: 40
+use_agc: false
+use_gradient_checkpointing: true
+use_progressive_unfreezing: false
+weight_decay: 0.06361308055294002

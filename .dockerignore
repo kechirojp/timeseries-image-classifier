@@ -1,0 +1,75 @@
+# Git ディレクトリ
+.git
+.gitignore
+
+# Docker 関連ファイル
+Dockerfile
+.dockerignore
+
+# Python 関連
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.venv/
+env/
+ENV/
+
+# IDE/エディタ設定ファイル
+.vscode/
+.idea/
+
+# データファイルや大きなファイル
+data/*
+!data/.gitkeep
+# models/
+
+# 時系列データディレクトリ（汎用化後）
+dataset_a_15m/
+dataset_a_15m_winsize40/
+dataset_b_15m_winsize40/
+dataset_c_15m_winsize40/
+# 汎用的なデータディレクトリパターン
+dataset_*_*/
+old_dataset_*/
+
+# ログファイル
+*.log
+lightning_logs/
+logs/
+
+# OS固有ファイル
+.DS_Store
+Thumbs.db
+
+# 既に削除済みの不要ファイル（参考）
+# feature_analysis/Figure_*.png (削除済み)
+# feature_analysis/lightGBMを使った特徴量重要度の算出_最新.ipynb (削除済み)
+# feature_analysis/old_colab_runner.ipynb (削除済み)
+# tuning/optuna_log_*.txt (削除済み)
+# tuning/best_trial.txt (削除済み)
+# src/# Code Citations.md (削除済み)
+# 旧ファイル類 (削除済み)
+
+# 不要ディレクトリ（削除済み）
+# feature_analysis/old/ (削除済み)
+# tuning/old_studies/ (削除済み)
+# configs/multimodal/ (削除済み)
+lightning_logs/
+logs/
+
+# フォルダは残すが中身はいらない
+checkpoints/*
+!checkpoints/.gitkeep
+feature_analysis/outputs/*
+!feature_analysis/outputs/.gitkeep
+feature_analysis/studies/*
+!feature_analysis/studies/.gitkeep
+feature_analysis/models/*
+!feature_analysis/models/.gitkeep
+tuning/checkpoints/*
+!tuning/checkpoints/.gitkeep
+tuning/visualization/*
+!tuning/visualization/.gitkeep

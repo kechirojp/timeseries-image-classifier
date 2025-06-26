@@ -1,0 +1,53 @@
+# 訓練再開用の設定ファイル
+
+# チェックポイントの設定
+checkpoint:
+  # 再開するチェックポイントファイルのパス
+  # 例: "model_epoch_00011_val_loss_0.9229_val_f1_0.6907.ckpt"
+  # 例: "last.ckpt"
+  path: "model_epoch_00011_val_loss_0.9229_val_f1_0.6907.ckpt" # ★ 再開したいチェックポイントに合わせて変更してください
+
+# 訓練設定
+training:
+  # 最大エポック数（この設定ファイルでの訓練セッションで実行するエポック数）
+  # 注意: これはチェックポイントのエポック数に追加されるのではなく、
+  #       Trainerのmax_epochsとして設定されます。
+  #       実質的に「この再開セッションで何エポック進めるか」を指定します。
+  #       例えば、45エポックで中断し、合計100エポックまで学習したい場合、
+  #       max_epochs: 100 と設定します。
+  max_epochs: 40 # ★ 目標とする総エポック数、またはこのセッションでの追加エポック数に合わせて調整
+  
+  # チェックポイント保存頻度
+  save_every_n_epochs: 1
+  
+  # トレーナー設定 (main.pyと同様の設定を反映)
+  precision: '16-mixed' # 混合精度計算 (16-mixed, 32-true, bf16-mixedなど)
+  accumulate_grad_batches: 2 # 勾配累積ステップ数
+  log_every_n_steps: 50 # ログ記録頻度 (ステップごと)
+  early_stopping_patience: 10 # val_f1 がこのエポック数改善しなかったら停止
+  
+  # バッチサイズ (元の設定を上書きする場合のみ指定)
+  # batch_size: 64
+
+# ハードウェア設定
+hardware:
+  # GPU使用設定
+  force_gpu: true # GPUを強制的に使用する場合はtrue
+  force_cpu: false # CPUを強制的に使用する場合はtrue
+  
+  # データローダー設定
+  num_workers: 4 # Google Colab環境では4以上推奨、Windows環境では0を推奨
+  pin_memory: true # GPUメモリへのピン留め (GPU使用時は通常true)
+  persistent_workers: true # ワーカープロセスを保持 (num_workers > 0の場合のみ有効)
+  prefetch_factor: 2 # データプリフェッチ係数 (num_workers > 0の場合のみ有効)
+
+# モデル設定の上書き (オプション)
+# model:
+#   drop_path_rate: 0.25 # ドロップパス率を変更する場合
+#   use_agc: false # AGCを無効にする場合
+
+# オプティマイザ設定の上書き (オプション)
+# optimizer:
+#   lr_head: 0.0002 # ヘッド部分の学習率を変更する場合
+#   lr_backbone: 0.00003 # バックボーン部分の学習率を変更する場合
+#   weight_decay: 0.03 # 重み減衰を変更する場合

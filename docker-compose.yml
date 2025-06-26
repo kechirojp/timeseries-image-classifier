@@ -1,0 +1,84 @@
+# Docker Compose ファイルのバージョン
+version: '3.8'
+
+# サービス (コンテナ) の定義
+services:
+  # アプリケーションサービスの名前
+  app:
+    # Dockerイメージのビルド設定
+    build:
+      # ビルドコンテキスト (Dockerfileがあるディレクトリ)
+      context: .
+      # 使用するDockerfileの名前
+      dockerfile: Dockerfile
+    # 環境変数の設定
+    environment:
+      # Pythonの出力をバッファリングしない (ログが即時表示される)
+      - PYTHONUNBUFFERED=1
+      # タイムゾーン設定 (Dockerfileと合わせておく)
+      - TZ=Asia/Tokyo
+      # CUDA関連の設定（PyTorch向け）
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_DEVICE_ORDER=PCI_BUS_ID
+      # Weights & Biases APIキー (使用する場合にコメントアウトを解除して設定)
+      # - WANDB_API_KEY=your_wandb_api_key
+      # MLflowトラッキングURI (使用する場合にコメントアウトを解除して設定)
+      # - MLFLOW_TRACKING_URI=http://localhost:5000
+    # ポートフォワーディングの設定 (必要に応じてコメントアウトを解除)
+    ports:
+      # TensorBoard用 (コンテナの6006番ポートをホストの6006番ポートにマッピング)
+      - "6006:6006"
+      # Jupyter Notebook/Lab用 (コンテナの8888番ポートをホストの8888番ポートにマッピング)
+      - "8888:8888"
+      # MLflow UI用 (コンテナの5000番ポートをホストの5000番ポートにマッピング)
+      # - "5000:5000"
+      # Optuna Dashboard用 (コンテナの8080番ポートをホストの8080番ポートにマッピング)
+      - "8080:8080"
+
+    # 作業ディレクトリの設定 (DockerfileのWORKDIRと合わせておく)
+    working_dir: /app
+    # ボリュームマウントの設定
+    volumes:
+      # ホストのカレントディレクトリをコンテナの/appにマウント（基本設定）
+      - .:/app
+      
+      # データディレクトリをマウント（イメージには含めず、実行時にマウント）
+      - ./data:/app/data
+      
+      # 教師画像データディレクトリ（必要に応じてコメントアウトを外す）
+      # - ./nasdaq100_15m:/app/nasdaq100_15m  # 説明: NASDAQ100 15分足の教師画像
+      # - ./nasdaq100_15m_winsize40:/app/nasdaq100_15m_winsize40  # 説明: NASDAQ100 15分足のウィンドウサイズ40の教師画像
+      # - ./GER30_15m_winsize40:/app/GER30_15m_winsize40  # 説明: GER30 15分足のウィンドウサイズ40の教師画像
+      # - ./US30_15m_winsize40:/app/US30_15m_winsize40  # 説明: US30 15分足のウィンドウサイズ40の教師画像
+      
+      # モデルチェックポイント（訓練結果の保存・読み込み用）
+      - ./checkpoints:/app/checkpoints
+      
+      # 特徴量分析の出力ディレクトリ
+      - ./feature_analysis/outputs:/app/feature_analysis/outputs
+      - ./feature_analysis/studies:/app/feature_analysis/studies
+      - ./feature_analysis/models:/app/feature_analysis/models
+      
+      # チューニング関連ディレクトリ
+      - ./tuning/checkpoints:/app/tuning/checkpoints
+      - ./tuning/outputs:/app/tuning/logs
+      - ./tuning/feature_analysis:/app/tuning/studies
+      - ./tuning/visualization:/app/tuning/visualization
+      
+      # ログディレクトリ
+      - ./logs:/app/logs
+      - ./lightning_logs:/app/lightning_logs
+      
+    # GPUリソースの割り当て設定 (NVIDIA GPUを使用する場合)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # 使用するGPUの数 (all も指定可能)
+              capabilities: [gpu]
+    # コンテナを起動し続けるための設定 (インタラクティブなセッションを維持)
+    tty: true
+    stdin_open: true
+    # 必要に応じて、コンテナ起動時に実行するコマンドを指定
+    # command: ["python3", "main.py"]
