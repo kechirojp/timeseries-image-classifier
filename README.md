@@ -6,13 +6,13 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-A production-ready deep learning project for time-series image classification using EfficientNet/NFNet with PyTorch Lightning. This project implements transfer learning for multi-class classification tasks with selective fine-tuning techniques, supporting both single-modal (image-only) and multi-modal (image + time-series features) learning approaches.
+A production-ready deep learning project for time-series image classification using EfficientNet/NFNet with PyTorch Lightning. This project implements transfer learning for multi-class classification tasks with selective fine-tuning techniques, supporting both single-modal (image-only) and multi-modal (image + time-series features) learning approaches. Currently adopts EfficientNet-B4 as the main architecture.
 
 [日本語版README](README_ja.md) | [English README](README.md)
 
 ## Features
 
-- **Model-Selectable Transfer Learning**: Pre-trained EfficientNet-B4 or NFNet-F0 (fallback to ResNet18) with configurable fine-tuning approaches
+- **Model-Selectable Transfer Learning**: Pre-trained EfficientNet-B4 (main), NFNet-F0, or ResNet18 (fallback) with configurable fine-tuning approaches
 - **Multi-Modal Support**: Single-modal (image-only) and multi-modal (image + numerical time-series features)
 - **Selective Fine-tuning**: Choose between stage-wise differential learning rates or progressive unfreezing
 - **F1-Score Optimization**: Comprehensive F1-score based evaluation and early stopping
@@ -187,9 +187,8 @@ Benefits:
 
 The classification model consists of:
 
-1. **Feature Extraction**: Pre-trained NFNet-F0/ResNet18 (single-modal) or combined image + numerical features (multi-modal)
-2. **Reasoning Head**: Intermediate representation generation
-3. **Classifier**: Final classification combining features and intermediate representations
+1. **Feature Extraction**: Pre-trained EfficientNet-B4/NFNet-F0/ResNet18 (single-modal) or combined image + numerical features (multi-modal)
+2. **Classification Head**: Multi-layer neural network that generates intermediate representations and performs final class classification
 
 ## Checkpoints
 
